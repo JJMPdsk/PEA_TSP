@@ -63,7 +63,46 @@ namespace TSP
         #endregion
 
 
-        static void ReadFromFileAsMatrix()
+
+
+        #region Methods
+
+        static void ReadCitiesFromFile()
+        {
+            string fileName = "dane.txt";
+
+            FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+            StreamReader sr = new StreamReader(fs);
+
+            var tmp = sr.ReadToEnd().Replace(System.Environment.NewLine, " ").Split(' ');
+            sr.Close();
+
+            //for testing
+            //foreach (var item in tmp)
+            //{
+            //    Console.WriteLine(item);
+            //}
+
+
+            var readInts = Array.ConvertAll(tmp, int.Parse);
+
+            TotalCities = readInts[0];
+
+            for (int i = 0; i < TotalCities; i++)
+            {
+                var tmpCity = new City();
+                tmpCity.Id = i;
+                tmpCity.Neighbors = new List<Neighbor>();
+
+                for (int j = 0; j < TotalCities; j++)
+                {
+                    tmpCity.Neighbors.Add(new Neighbor { Id = j, Distance = readInts[(i * TotalCities) + j + 1], WasVisited = false });
+                }
+                cities.Add(tmpCity);
+            }
+        }
+
+        static void ReadCitiesFromFileAsMatrix()
         {
             var tmp = sr.ReadToEnd().Replace(System.Environment.NewLine, " ").Split(' ');
             sr.Close();
@@ -105,54 +144,12 @@ namespace TSP
             CitiesArray = myArr;
         }
 
-
-        #region Methods
-
-
-
-        static void ReadCitiesFromFile()
-        {
-            string fileName = "dane.txt";
-
-            FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
-            StreamReader sr = new StreamReader(fs);
-
-            var tmp = sr.ReadToEnd().Replace(System.Environment.NewLine, " ").Split(' ');
-            sr.Close();
-
-            //for testing
-            //foreach (var item in tmp)
-            //{
-            //    Console.WriteLine(item);
-            //}
-
-
-            var readInts = Array.ConvertAll(tmp, int.Parse);
-
-            TotalCities = readInts[0];
-
-            for (int i = 0; i < TotalCities; i++)
-            {
-                var tmpCity = new City();
-                tmpCity.Id = i;
-                tmpCity.Neighbors = new List<Neighbor>();
-
-                for (int j = 0; j < TotalCities; j++)
-                {
-                    tmpCity.Neighbors.Add(new Neighbor { Id = j, Distance = readInts[(i * TotalCities) + j + 1], WasVisited = false });
-                }
-                cities.Add(tmpCity);
-            }
-        }
-
-
         #endregion
 
         static void Main(string[] args)
         {
 
-            //ReadCitiesFromFile();
-            ReadFromFileAsMatrix();
+            ReadCitiesFromFileAsMatrix();
 
             Console.WriteLine();
             // print array (for testing)
@@ -165,7 +162,21 @@ namespace TSP
                 Console.WriteLine();
             }
 
-            // Algorithm.BruteForce(cities, 0, cities.Count - 1);
+            Helper.Swap(CitiesArray, 0, 1);
+
+
+            Console.WriteLine();
+            // print array (for testing)
+            for (int i = 0; i < TotalCities; i++)
+            {
+                for (int j = 0; j < TotalCities; j++)
+                {
+                    Console.Write(CitiesArray[i, j] + " ");
+                }
+                Console.WriteLine();
+            }
+
+            // Algorithm.BruteForce(CitiesArray, 0, CitiesArray.Count - 1);
 
             //Console.WriteLine(Algorithm.BestRoad);
             //Console.WriteLine(Algorithm.BestPath);
@@ -209,6 +220,42 @@ namespace TSP
                 }
             }
         }
+
+        /// <summary>
+        /// BrufeForce algorithm
+        /// </summary>
+        /// <param name="cities">Array of cities</param>
+        /// <param name="i">Index we start at</param>
+        /// <param name="n">Length of the collection</param>
+        public static void BruteForce(int[,] cities, int i, int n)
+        {
+            int j;
+            if (i == n)
+            {
+                //PrintCities(cities);
+                //Console.WriteLine(CalculateDistance(cities));
+                int tempDist = CalculateDistance(cities).Item1;
+                string path = CalculateDistance(cities).Item2;
+                if (tempDist < BestRoad)
+                {
+                    BestPath = "";
+                    BestPath = path;
+                    BestRoad = tempDist;
+                }
+            }
+            else
+            {
+                for (j = i; j <= n; j++)
+                {
+                    Helper.Swap(cities, i, j);
+                    BruteForce(cities, i + 1, n);
+                    Helper.Swap(cities, i, j); //backtrack
+                }
+            }
+        }
+
+
+
 
         static void PrintCities(List<City> cities)
         {
@@ -272,6 +319,39 @@ namespace TSP
                 }
         }
     }
+
+
+    //-----------------------------------------------------------------------------------------------------------------------------------------------------
+    public static class Helper
+    {
+        public static void Swap(int[,] cities, int row1, int row2)
+        {
+            int[] tmpRow = new int[Program.TotalCities];
+            for (int i = 0; i < Program.TotalCities; i++)
+            {
+                tmpRow[i] = cities[row1, i];
+                cities[row1, i] = cities[row2, i];
+                cities[row2, i] = tmpRow[i];
+            }
+        }
+
+        static void Swap(List<City> cities, int a, int b)
+        {
+            var tmp = cities[a];
+            cities[a] = cities[b];
+            cities[b] = tmp;
+        }
+
+        static Tuple<int, string> CalculateDistance(int[,] cities)
+        {
+
+
+
+            return new Tuple<int, string>(1,"elo");
+        }
+
+    }
+    //-----------------------------------------------------------------------------------------------------------------------------------------------------
 
 }
 //-----------------------------------------------------------------------------------------------------------------------------------------------------
