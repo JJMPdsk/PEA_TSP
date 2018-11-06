@@ -1,7 +1,0 @@
-C:\Users\John\Desktop\PEAv1_0\TSP\TSP\bin\Debug\TSP.exe.config
-C:\Users\John\Desktop\PEAv1_0\TSP\TSP\bin\Debug\TSP.exe
-C:\Users\John\Desktop\PEAv1_0\TSP\TSP\bin\Debug\TSP.pdb
-C:\Users\John\Desktop\PEAv1_0\TSP\TSP\obj\Debug\TSP.csprojAssemblyReference.cache
-C:\Users\John\Desktop\PEAv1_0\TSP\TSP\obj\Debug\TSP.csproj.CoreCompileInputs.cache
-C:\Users\John\Desktop\PEAv1_0\TSP\TSP\obj\Debug\TSP.exe
-C:\Users\John\Desktop\PEAv1_0\TSP\TSP\obj\Debug\TSP.pdb
