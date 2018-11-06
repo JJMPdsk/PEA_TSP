@@ -56,6 +56,9 @@ namespace TSP
         public static List<City> cities = new List<City>();
         public static int[,] CitiesArray { get; set; }// = new int[TotalCities, TotalCities];
 
+
+
+
         public static string FileName { get; set; } = "dane.txt";
         private static FileStream fs = new FileStream(FileName, FileMode.Open, FileAccess.Read);
         private static StreamReader sr = new StreamReader(fs);
@@ -148,37 +151,14 @@ namespace TSP
 
         static void Main(string[] args)
         {
-
             ReadCitiesFromFileAsMatrix();
 
-            Console.WriteLine();
-            // print array (for testing)
-            for (int i = 0; i < TotalCities; i++)
-            {
-                for (int j = 0; j < TotalCities; j++)
-                {
-                    Console.Write(CitiesArray[i, j] + " ");
-                }
-                Console.WriteLine();
-            }
+            // array containing only one path, ie 0 -> 1 -> 2 -> 4 -> 3 -> 0 to operate on CitiesArray
+            int[] RoadArray = new int[Program.TotalCities - 1]; // we know first and last city to travel to, therefore -2
+            for (int i = 0; i < TotalCities - 1; i++){RoadArray[i] = i + 1;} // fill arr with next cities
+            Algorithm.BruteForce(RoadArray, 0, RoadArray.Length-1);
 
-            Helper.Swap(CitiesArray, 0, 1);
-
-
-            Console.WriteLine();
-            // print array (for testing)
-            for (int i = 0; i < TotalCities; i++)
-            {
-                for (int j = 0; j < TotalCities; j++)
-                {
-                    Console.Write(CitiesArray[i, j] + " ");
-                }
-                Console.WriteLine();
-            }
-
-            // Algorithm.BruteForce(CitiesArray, 0, CitiesArray.Count - 1);
-
-            //Console.WriteLine(Algorithm.BestRoad);
+            Console.WriteLine(Algorithm.BestRoad);
             //Console.WriteLine(Algorithm.BestPath);
         }
 
@@ -234,8 +214,8 @@ namespace TSP
             {
                 //PrintCities(cities);
                 //Console.WriteLine(CalculateDistance(cities));
-                int tempDist = CalculateDistance(cities).Item1;
-                string path = CalculateDistance(cities).Item2;
+                int tempDist = Helper.CalculateDistance(cities).Item1;
+                string path = Helper.CalculateDistance(cities).Item2;
                 if (tempDist < BestRoad)
                 {
                     BestPath = "";
@@ -255,6 +235,39 @@ namespace TSP
         }
 
 
+        /// <summary>
+        /// BrufeForce algorithm
+        /// </summary>
+        /// <param name="cities">Array path</param>
+        /// <param name="i">Index we start at</param>
+        /// <param name="n">Length of the collection</param>
+        public static void BruteForce(int[] path, int i, int n)
+        {
+            int j;
+            if (i == n)
+            {
+                //PrintCities(cities);
+                //Console.WriteLine(CalculateDistance(cities));
+                int tempDist = Helper.CalculateDistance(path).Item1;
+                string strPath = Helper.CalculateDistance(path).Item2;
+                if (tempDist < BestRoad)
+                {
+                    BestPath = "";
+                    BestPath = strPath;
+                    BestRoad = tempDist;
+                }
+            }
+            else
+            {
+                for (j = i; j <= n; j++)
+                {
+                    Helper.Swap(path, i, j);
+                    BruteForce(path, i + 1, n);
+                    Helper.Swap(path, i, j); //backtrack
+                }
+            }
+        }
+
 
 
         static void PrintCities(List<City> cities)
@@ -269,7 +282,7 @@ namespace TSP
             cities[a] = cities[b];
             cities[b] = tmp;
         }
-        static Tuple<int,string> CalculateDistance(List<City> cities)
+        static Tuple<int, string> CalculateDistance(List<City> cities)
         {
             int distance = 0, tempId;
             string str = "";
@@ -300,14 +313,14 @@ namespace TSP
                     }
                     //---------------------------------------------------
                     if (cities[i].Neighbors[j].Id != tempId)
-                    if (cities[i].Neighbors[j].WasVisited == false)
-                    {
-                        distance += cities[i].Neighbors[j].Distance;
+                        if (cities[i].Neighbors[j].WasVisited == false)
+                        {
+                            distance += cities[i].Neighbors[j].Distance;
                             str += $"{cities[i].Neighbors[j].Id} -> ";
-                    }
+                        }
                 }
             }
-            return new Tuple<int,string>(distance, str);
+            return new Tuple<int, string>(distance, str);
         }
         static public void ResetNeighborList(List<City> cities)
         {
@@ -326,6 +339,8 @@ namespace TSP
     {
         public static void Swap(int[,] cities, int row1, int row2)
         {
+            //if (row1 == 0 || row2 == 0) return;
+
             int[] tmpRow = new int[Program.TotalCities];
             for (int i = 0; i < Program.TotalCities; i++)
             {
@@ -335,19 +350,81 @@ namespace TSP
             }
         }
 
-        static void Swap(List<City> cities, int a, int b)
+        public static void Swap(int[] cities, int el1, int el2)
+        {
+            var tmp = cities[el1];
+            cities[el1] = cities[el2];
+            cities[el2] = tmp;
+        }
+
+
+        public static void Swap(List<City> cities, int a, int b)
         {
             var tmp = cities[a];
             cities[a] = cities[b];
             cities[b] = tmp;
         }
 
-        static Tuple<int, string> CalculateDistance(int[,] cities)
+        public static Tuple<int, string> CalculateDistance(int[,] cities)
         {
+            //List<bool> visitedList = new List<bool>();
+            // fill List with all falses
+            //for (int i = 0; i < Program.TotalCities; i++){visitedList.Add(false);}
 
 
+            int distance = 0, tmpdist = 0;
 
-            return new Tuple<int, string>(1,"elo");
+            for (int i = 1; i <= Program.TotalCities; i++)
+            {
+                if (i == Program.TotalCities)
+                {
+                    tmpdist = cities[Program.TotalCities - 1, 0];
+                    if (tmpdist == 0)
+                    {
+                        distance = Int32.MaxValue;
+                        break;
+                    }
+                    distance += tmpdist;
+                }
+                else
+                {
+                    tmpdist = cities[i - 1, i];
+                    if (tmpdist == 0)
+                    {
+                        distance = Int32.MaxValue;
+                        break;
+                    }
+                    distance += tmpdist;
+                }
+            }
+
+            return new Tuple<int, string>(distance, "elo");
+        }
+
+
+        public static Tuple<int, string> CalculateDistance(int[] path)
+        {
+            //List<bool> visitedList = new List<bool>();
+            // fill List with all falses
+            //for (int i = 0; i < Program.TotalCities; i++){visitedList.Add(false);}
+
+
+            int distance = 0, tmpdist = 0;
+
+
+            //dist from 0 -> X
+            distance += Program.CitiesArray[0, path[0]];
+
+            // F R A G I L E  P O I N T 
+            for (int i = 0; i < path.Length-1; i++)
+            {
+                distance += Program.CitiesArray[path[i], path[i+1]];
+            }
+
+            //dist from Z -> 0
+            distance += Program.CitiesArray[path[path.Length-1], 0];
+
+            return new Tuple<int, string>(distance, "elo");
         }
 
     }
