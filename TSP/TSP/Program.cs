@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -36,8 +37,78 @@ namespace TSP
     public class Program
     {
 
-        public static int TotalCities { get; set; } //total number of cities
+        //private static int totalCities;
+
+        #region Properties
+
+        //public static int TotalCities
+        //{
+        //    get { return totalCities; }
+        //    set
+        //    {
+        //        var tmp = sr.ReadLine();
+        //        sr.Close();
+        //        totalCities = Int32.Parse(tmp);
+        //    }
+        //}
+
+        public static int TotalCities { get; set; }
         public static List<City> cities = new List<City>();
+        public static int[,] CitiesArray { get; set; }// = new int[TotalCities, TotalCities];
+
+        public static string FileName { get; set; } = "dane.txt";
+        private static FileStream fs = new FileStream(FileName, FileMode.Open, FileAccess.Read);
+        private static StreamReader sr = new StreamReader(fs);
+
+        #endregion
+
+
+        static void ReadFromFileAsMatrix()
+        {
+            var tmp = sr.ReadToEnd().Replace(System.Environment.NewLine, " ").Split(' ');
+            sr.Close();
+
+            // print what we loaded
+            //foreach (var item in tmp)
+            //{
+            //    Console.WriteLine(item);
+            //}
+
+            var readInts = Array.ConvertAll(tmp, int.Parse);
+
+            TotalCities = readInts[0];
+            int[,] myArr = new int[TotalCities, TotalCities];
+
+            readInts = readInts.Skip(1).ToArray();
+            int currentIndexOnReadInts = 0;
+            // load array
+            for (int i = 0; i < TotalCities; i++)
+            {
+                for (int j = 0; j < TotalCities; j++)
+                {
+                    myArr[i, j] = readInts[currentIndexOnReadInts];
+                    currentIndexOnReadInts++;
+                }
+            }
+
+            //Console.WriteLine();
+            // print array (for testing)
+            //for (int i = 0; i < TotalCities; i++)
+            //{
+            //    for (int j = 0; j < TotalCities; j++)
+            //    {
+            //        Console.Write(myArr[i,j] + " ");
+            //    }
+            //    Console.WriteLine();
+            //}
+
+            CitiesArray = myArr;
+        }
+
+
+        #region Methods
+
+
 
         static void ReadCitiesFromFile()
         {
@@ -74,15 +145,30 @@ namespace TSP
             }
         }
 
+
+        #endregion
+
         static void Main(string[] args)
         {
 
-            ReadCitiesFromFile();
+            //ReadCitiesFromFile();
+            ReadFromFileAsMatrix();
 
-            Algorithm.BruteForce(cities, 0, cities.Count - 1);
+            Console.WriteLine();
+            // print array (for testing)
+            for (int i = 0; i < TotalCities; i++)
+            {
+                for (int j = 0; j < TotalCities; j++)
+                {
+                    Console.Write(CitiesArray[i, j] + " ");
+                }
+                Console.WriteLine();
+            }
 
-            Console.WriteLine(Algorithm.BestRoad);
-            Console.WriteLine(Algorithm.BestPath);
+            // Algorithm.BruteForce(cities, 0, cities.Count - 1);
+
+            //Console.WriteLine(Algorithm.BestRoad);
+            //Console.WriteLine(Algorithm.BestPath);
         }
 
     }
