@@ -4,18 +4,17 @@ using System.Linq;
 
 namespace TSP
 {
-    //-----------------------------------------------------------------------------------------------------------------------------------------------------
     public class Program
     {
 
         #region Properties
 
-        private static FileStream fs = new FileStream(FileName, FileMode.Open, FileAccess.Read);
-        private static StreamReader sr = new StreamReader(fs);
-
         public static int TotalCities { get; set; }
         public static int[,] CitiesArray { get; set; }
         public static string FileName { get; set; } = "dane.txt";
+
+        private static FileStream fs = new FileStream(FileName, FileMode.Open, FileAccess.Read);
+        private static StreamReader sr = new StreamReader(fs);
 
         #endregion
 
@@ -88,97 +87,4 @@ namespace TSP
         }
 
     }
-    //-----------------------------------------------------------------------------------------------------------------------------------------------------
-    public class Algorithm
-    {
-        #region Properties
-
-        public static int BestRoad { get; set; } = int.MaxValue;
-        public static string BestPath { get; set; } // i.e. 0 -> 1 -> 2 -> ...
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// BrufeForce algorithm
-        /// We get all permutations of Road Array to get all possible paths.
-        /// Then we calculate distance for each path.
-        /// </summary>
-        /// <param name="path">Road array</param>
-        /// <param name="i">Index we start at</param>
-        /// <param name="n">Length of the collection</param>
-        public static void BruteForce(int[] path, int i, int n)
-        {
-            int j;
-            if (i == n)
-            {
-                int tempDist = Helper.CalculateDistance(path).Item1;
-                string strPath = Helper.CalculateDistance(path).Item2;
-                if (tempDist >= BestRoad) return;
-                BestPath = "";
-                BestPath = strPath;
-                BestRoad = tempDist;
-            }
-            else
-            {
-                for (j = i; j <= n; j++)
-                {
-                    Helper.Swap(path, i, j);
-                    BruteForce(path, i + 1, n);
-                    Helper.Swap(path, i, j); //backtrack
-                }
-            }
-        }
-
-        #endregion
-    }
-    //-----------------------------------------------------------------------------------------------------------------------------------------------------
-    public static class Helper
-    {
-        #region Methods
-
-        /// <summary>
-        /// Function that exchanges 2 elements of an array
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="el1"></param>
-        /// <param name="el2"></param>
-        public static void Swap(int[] path, int el1, int el2)
-        {
-            var tmp = path[el1];
-            path[el1] = path[el2];
-            path[el2] = tmp;
-        }
-
-        /// <summary>
-        /// Function calculating the distance for specific path
-        /// </summary>
-        /// <param name="path">Road array</param>
-        /// <returns>Returns tuple containing distance(int) and path(string)</returns>
-        public static Tuple<int, string> CalculateDistance(int[] path)
-        {
-            int distance = 0, tmpdist = 0;
-            string strPath = $"0 -> {path[0]}";
-
-            //dist from 0 -> X
-            distance += Program.CitiesArray[0, path[0]];
-
-            for (int i = 0; i < path.Length-1; i++)
-            {
-                distance += Program.CitiesArray[path[i], path[i+1]];
-                strPath += $" -> {path[i + 1]}";
-            }
-
-            //dist from Z -> 0
-            strPath += $" -> 0";
-            distance += Program.CitiesArray[path[path.Length-1], 0];
-
-            return new Tuple<int, string>(distance, strPath);
-        }
-
-        #endregion
-    }
-    //-----------------------------------------------------------------------------------------------------------------------------------------------------
 }
-//-----------------------------------------------------------------------------------------------------------------------------------------------------
