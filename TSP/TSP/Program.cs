@@ -59,19 +59,36 @@ namespace TSP
                 }
             }
 
-            // Print loaded array.
-            //Console.WriteLine();
-            // print array (for testing)
-            //for (int i = 0; i < TotalCities; i++)
-            //{
-            //    for (int j = 0; j < TotalCities; j++)
-            //    {
-            //        Console.Write(myArr[i,j] + " ");
-            //    }
-            //    Console.WriteLine();
-            //}
 
             CitiesArray = myArr;
+        }
+
+        public static void PrintCities(int[,] myArr)
+        {
+            Console.Write(" ");
+            for (int i = 0; i < TotalCities; i++)
+            {
+                Console.Write($"  {i}");
+            }
+
+            Console.WriteLine();
+            Console.Write(" ");
+            for (int i = 0; i < TotalCities; i++)
+            {
+                Console.Write($"  -");
+            }
+
+            Console.WriteLine();
+            for (int i = 0; i < TotalCities; i++)
+            {
+                Console.Write($"{i}| ");
+                for (int j = 0; j < TotalCities; j++)
+                {
+                    Console.Write(myArr[i, j] + " ");
+                }
+
+                Console.WriteLine();
+            }
         }
 
         #endregion
@@ -84,20 +101,22 @@ namespace TSP
             switch (State)
             {
                 case 1:
-                {
-                    int N = 500;
-                    for (int i = 0; i < N; i++)
                     {
-                        sw.Reset();
-                        sw.Start();
-                        Algorithm.BruteForce(roadArray, 0, roadArray.Length - 1);
-                        sw.Stop();
-                        Console.WriteLine(sw.Elapsed);
-                    }
+                        int N = 500;
+                        for (int i = 0; i < N; i++)
+                        {
+                            sw.Reset();
+                            sw.Start();
+                            Algorithm.BruteForce(roadArray, 0, roadArray.Length - 1);
+                            sw.Stop();
+                            Console.WriteLine(sw.Elapsed);
+                        }
 
-                    break;
-                }
+                        break;
+                    }
                 case 2:
+                    PrintCities(CitiesArray);
+
                     sw.Reset();
                     sw.Start();
                     Algorithm.BruteForce(roadArray, 0, roadArray.Length - 1);
@@ -108,8 +127,6 @@ namespace TSP
                     Console.WriteLine($"Path: {Algorithm.BestPath}");
                     break;
             }
-
-
 
         }
     }
