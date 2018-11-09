@@ -21,11 +21,12 @@
         /// <param name="n">Length of the collection</param>
         public static void BruteForce(int[] path, int i, int n)
         {
-            int j;
             if (i == n)
             {
                 int tempDist = Helper.CalculateDistance(path).Item1;
                 string strPath = Helper.CalculateDistance(path).Item2;
+                Program.IterationCounter++;
+
                 if (tempDist >= BestRoad) return;
                 BestPath = "";
                 BestPath = strPath;
@@ -33,6 +34,7 @@
             }
             else
             {
+                int j;
                 for (j = i; j <= n; j++)
                 {
                     Helper.Swap(path, i, j);

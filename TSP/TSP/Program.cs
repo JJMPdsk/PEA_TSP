@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -12,10 +13,13 @@ namespace TSP
         public static int TotalCities { get; set; }
         public static int[,] CitiesArray { get; set; }
         public static string FileName { get; set; } = "dane.txt";
+        public static int IterationCounter { get; set; } = 0;
+        public static Stopwatch sw = new Stopwatch();
+        public const int State = 2; // 1 - disables text appending so we don't calculate it
+                                    // 2 - enables text appending
 
         private static FileStream fs = new FileStream(FileName, FileMode.Open, FileAccess.Read);
         private static StreamReader sr = new StreamReader(fs);
-
         #endregion
 
         #region Methods
@@ -75,16 +79,38 @@ namespace TSP
         static void Main(string[] args)
         {
             ReadCitiesFromFileAsMatrix();
+            int[] roadArray = Helper.FillRoadArray();
 
-            // Array containing only one path, ie 0 -> 1 -> 2 -> 4 -> 3 -> 0 to operate on CitiesArray.
-            int[] RoadArray = new int[Program.TotalCities - 1]; // We know first city we travel from and last city we travel to, therefore -1
-            for (int i = 0; i < TotalCities - 1; i++){RoadArray[i] = i + 1;} // Fill RoadArray with next cities
+            switch (State)
+            {
+                case 1:
+                {
+                    int N = 500;
+                    for (int i = 0; i < N; i++)
+                    {
+                        sw.Reset();
+                        sw.Start();
+                        Algorithm.BruteForce(roadArray, 0, roadArray.Length - 1);
+                        sw.Stop();
+                        Console.WriteLine(sw.Elapsed);
+                    }
 
-            Algorithm.BruteForce(RoadArray, 0, RoadArray.Length-1);
+                    break;
+                }
+                case 2:
+                    sw.Reset();
+                    sw.Start();
+                    Algorithm.BruteForce(roadArray, 0, roadArray.Length - 1);
+                    sw.Stop();
+                    Console.WriteLine($"Iterations: {IterationCounter}");
+                    Console.WriteLine($"Elapsed: {sw.Elapsed}");
+                    Console.WriteLine($"Solution: {Algorithm.BestRoad}");
+                    Console.WriteLine($"Path: {Algorithm.BestPath}");
+                    break;
+            }
 
-            Console.WriteLine(Algorithm.BestRoad);
-            Console.WriteLine(Algorithm.BestPath);
+
+
         }
-
     }
 }
