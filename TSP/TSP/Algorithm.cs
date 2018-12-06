@@ -1,4 +1,6 @@
-﻿namespace TSP
+﻿using System;
+
+namespace TSP
 {
     public class Algorithm
     {
@@ -11,6 +13,9 @@
 
         #region Methods
 
+        // [1,2,3,4,5] -> [1,2,3,5,4] -> [1,2,4,3,5] -> [1,2,4,5,3] -> 
+        // [1,2,5,4,3] -> [1,2,5,3,4] -> [1,3,2,4,5] -> [1,3,2,4,5] -> 
+        // [1,3,2,5,4] -> []
         /// <summary>
         /// BrufeForce algorithm
         /// We get all permutations of Road Array to get all possible paths.
@@ -21,10 +26,17 @@
         /// <param name="n">Length of the collection</param>
         public static void BruteForce(int[] path, int i, int n)
         {
-            if (i == n)
+            if (i == n) // condition to exit 
             {
-                int tempDist = Helper.CalculateDistance(path).Item1;
-                string strPath = Helper.CalculateDistance(path).Item2;
+                //Console.WriteLine();
+                //for (int x = 0; x <= path.Length-1; x++)
+                //{
+                //    Console.Write(path[x]);
+                //}
+
+
+                int tempDist = Helper.CalculateDistance(path).Item1; // temp distance
+                string strPath = Helper.CalculateDistance(path).Item2; // temp path
                 Program.IterationCounter++;
 
                 if (tempDist >= BestRoad) return;
@@ -33,15 +45,13 @@
                 BestRoad = tempDist;
             }
             else
-            {
-                int j;
-                for (j = i; j <= n; j++)
+
+                for (int j = i; j <= n; j++)
                 {
-                    Helper.Swap(path, i, j);
-                    BruteForce(path, i + 1, n);
-                    Helper.Swap(path, i, j); //backtrack
+                    Helper.Swap(path, i, j); // swap 2 cities on path array
+                    BruteForce(path, i + 1, n); // call recur.
+                    Helper.Swap(path, i, j); // swap it back
                 }
-            }
         }
 
         #endregion

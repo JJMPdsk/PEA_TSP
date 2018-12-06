@@ -12,7 +12,7 @@ namespace TSP
 
         public static int TotalCities { get; set; }
         public static int[,] CitiesArray { get; set; }
-        public static string FileName { get; set; } = "dane.txt";
+        public static string FileName { get; set; } = @"C:\Users\John\Desktop\C#\PEA_TSP\TSP\TSP\txt\tsp_10.txt";
         public static int IterationCounter { get; set; } = 0;
         public static Stopwatch sw = new Stopwatch();
         public const int State = 2; // 1 - disables text appending so we don't calculate it
@@ -127,6 +127,8 @@ namespace TSP
                     Console.WriteLine($"Path: {Algorithm.BestPath}");
                     break;
             }
+
+            Console.ReadKey();
 
         }
     }
