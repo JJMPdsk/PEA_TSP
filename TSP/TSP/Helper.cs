@@ -76,7 +76,7 @@ namespace TSP
         /// <typeparam name="T"></typeparam>
         /// <param name="rng"></param>
         /// <param name="array"></param>
-        public static void Shuffle<T>(this Random rng, T[] array)
+        public static void Shuffle<T>(Random rng, T[] array)
         {
             int n = array.Length;
             while (n > 1)

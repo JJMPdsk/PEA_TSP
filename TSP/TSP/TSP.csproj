@@ -45,6 +45,9 @@
     <Compile Include="Algorithm.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Solution.cs" />
+    <Compile Include="TabuElement.cs" />
+    <Compile Include="TabuSearch.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

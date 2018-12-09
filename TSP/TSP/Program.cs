@@ -12,7 +12,7 @@ namespace TSP
 
         public static int TotalCities { get; set; }
         public static int[,] CitiesArray { get; set; }
-        public static string FileName { get; set; } = @"C:\Users\JCVUMP\Desktop\C#\PEA_TSP\TSP\TSP\txt\tsp_10.txt";
+        public static string FileName { get; set; } = @"C:\Users\JCVUMP\Desktop\C#\PEA_TSP\TSP\TSP\txt\data21.txt";
         public static int IterationCounter { get; set; } = 0;
         public static Stopwatch sw = new Stopwatch();
         public const int State = 2; // 1 - disables text appending so we don't calculate it
@@ -100,10 +100,29 @@ namespace TSP
             ReadCitiesFromFileAsMatrix();
             int[] roadArray = Helper.FillRoadArray();
 
-            BruteForceAlgorithm(roadArray);
+            for (int i = 0; i < 100; i++)
+                TabuSearchAlgorithm(roadArray);
+
+
+            //BruteForceAlgorithm(roadArray);
 
             Console.ReadKey();
 
+        }
+
+        private static void TabuSearchAlgorithm(int[] roadArray)
+        {
+            //parameters for tabuSearch
+            //int neighborhoodCap = TotalCities/2;
+            int neighborhoodCap = 1;
+            int cadency = TotalCities*3;
+            int time = 60;
+            double aspiration = 0.99; // [0.0 - 1.0]
+            Helper.Shuffle(new Random(), roadArray);
+
+
+            var tabuSearch = new TabuSearch(roadArray, cadency, time, aspiration, neighborhoodCap);
+            tabuSearch.Run();
         }
 
         /// <summary>
