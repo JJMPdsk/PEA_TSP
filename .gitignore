@@ -1,7 +1,5 @@
 *.exe
 *.
-*.sln
-*.csproj
 Properties
 Obj
 bin
