@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Text;
 
 namespace TSP
@@ -33,16 +32,16 @@ namespace TSP
             // StringBuilder is much more efficient when it comes to appending new stuff to string. With small numbers it's not much
             // of a deal, but having nearly n! appends it does matter      
             StringBuilder strPath;
-            
+
             if (Program.State == 2) strPath = new StringBuilder($"0 -> {path[0]}");
 
             //dist from 0 -> X
             distance += Program.CitiesArray[0, path[0]];
 
-            for (int i = 0; i < path.Length-1; i++)
+            for (int i = 0; i < path.Length - 1; i++)
             {
                 if (Program.CitiesArray[path[i], path[i + 1]] <= 0) return new Tuple<int, string>(Int32.MaxValue, "Something's wrong.");
-                distance += Program.CitiesArray[path[i], path[i+1]];
+                distance += Program.CitiesArray[path[i], path[i + 1]];
 
 
                 if (Program.State == 2) strPath.Append($" -> {path[i + 1]}");
@@ -50,8 +49,8 @@ namespace TSP
 
             //dist from Z -> 0
             if (Program.State == 2) strPath.Append($" -> 0");
-            
-            distance += Program.CitiesArray[path[path.Length-1], 0];
+
+            distance += Program.CitiesArray[path[path.Length - 1], 0];
 
 
             if (Program.State == 2) return new Tuple<int, string>(distance, strPath.ToString());
