@@ -33,7 +33,7 @@ namespace TSP
             // of a deal, but having nearly n! appends it does matter      
             StringBuilder strPath;
 
-            if (Program.State == 2) strPath = new StringBuilder($"0 -> {path[0]}");
+            if (Program.Testing) strPath = new StringBuilder($"0 -> {path[0]}");
 
             //dist from 0 -> X
             distance += Program.CitiesArray[0, path[0]];
@@ -44,16 +44,16 @@ namespace TSP
                 distance += Program.CitiesArray[path[i], path[i + 1]];
 
 
-                if (Program.State == 2) strPath.Append($" -> {path[i + 1]}");
+                if (Program.Testing) strPath.Append($" -> {path[i + 1]}");
             }
 
             //dist from Z -> 0
-            if (Program.State == 2) strPath.Append($" -> 0");
+            if (Program.Testing) strPath.Append($" -> 0");
 
             distance += Program.CitiesArray[path[path.Length - 1], 0];
 
 
-            if (Program.State == 2) return new Tuple<int, string>(distance, strPath.ToString());
+            if (Program.Testing) return new Tuple<int, string>(distance, strPath.ToString());
             return new Tuple<int, string>(distance, String.Empty);
         }
 
@@ -68,6 +68,24 @@ namespace TSP
             for (int i = 0; i < Program.TotalCities - 1; i++) { RoadArray[i] = i + 1; } // Fill RoadArray with next cities
 
             return RoadArray;
+        }
+
+        /// <summary>
+        /// Extension method shuffling the array
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="rng"></param>
+        /// <param name="array"></param>
+        public static void Shuffle<T>(this Random rng, T[] array)
+        {
+            int n = array.Length;
+            while (n > 1)
+            {
+                int k = rng.Next(n--);
+                T temp = array[n];
+                array[n] = array[k];
+                array[k] = temp;
+            }
         }
 
         #endregion

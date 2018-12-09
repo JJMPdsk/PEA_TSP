@@ -18,6 +18,8 @@ namespace TSP
         public const int State = 2; // 1 - disables text appending so we don't calculate it
                                     // 2 - enables text appending
 
+        public const bool Testing = true;
+
         private static FileStream fs = new FileStream(FileName, FileMode.Open, FileAccess.Read);
         private static StreamReader sr = new StreamReader(fs);
         #endregion
@@ -98,38 +100,44 @@ namespace TSP
             ReadCitiesFromFileAsMatrix();
             int[] roadArray = Helper.FillRoadArray();
 
-            switch (State)
+            BruteForceAlgorithm(roadArray);
+
+            Console.ReadKey();
+
+        }
+
+        /// <summary>
+        /// Execution of BF algorithm
+        /// </summary>
+        /// <param name="roadArray"></param>
+        private static void BruteForceAlgorithm(int[] roadArray)
+        {
+            // Testing - prints all info
+            if (Testing)
             {
-                case 1:
-                    {
-                        int N = 500;
-                        for (int i = 0; i < N; i++)
-                        {
-                            sw.Reset();
-                            sw.Start();
-                            Algorithm.BruteForce(roadArray, 0, roadArray.Length - 1);
-                            sw.Stop();
-                            Console.WriteLine(sw.Elapsed);
-                        }
+                PrintCities(CitiesArray);
 
-                        break;
-                    }
-                case 2:
-                    PrintCities(CitiesArray);
-
+                sw.Reset();
+                sw.Start();
+                Algorithm.BruteForce(roadArray, 0, roadArray.Length - 1);
+                sw.Stop();
+                Console.WriteLine($"Iterations: {IterationCounter}");
+                Console.WriteLine($"Elapsed: {sw.Elapsed}");
+                Console.WriteLine($"Solution: {Algorithm.BestRoad}");
+                Console.WriteLine($"Path: {Algorithm.BestPath}");
+            }
+            else // Only calculations
+            {
+                int N = 500;
+                for (int i = 0; i < N; i++)
+                {
                     sw.Reset();
                     sw.Start();
                     Algorithm.BruteForce(roadArray, 0, roadArray.Length - 1);
                     sw.Stop();
-                    Console.WriteLine($"Iterations: {IterationCounter}");
-                    Console.WriteLine($"Elapsed: {sw.Elapsed}");
-                    Console.WriteLine($"Solution: {Algorithm.BestRoad}");
-                    Console.WriteLine($"Path: {Algorithm.BestPath}");
-                    break;
+                    Console.WriteLine(sw.Elapsed);
+                }
             }
-
-            Console.ReadKey();
-
         }
     }
 }

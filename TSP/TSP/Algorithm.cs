@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TSP
+﻿namespace TSP
 {
     public class Algorithm
     {
