@@ -48,7 +48,6 @@ namespace TSP
 
         #endregion
 
-
         #region Main methods
 
         private void GenerateNeighbors()
@@ -137,7 +136,6 @@ namespace TSP
 
         private void TimerTick(Object obj, ElapsedEventArgs e)
         {
-            Console.WriteLine(BestSolution.Distance);
             _continueRunning = false;
         }
 
