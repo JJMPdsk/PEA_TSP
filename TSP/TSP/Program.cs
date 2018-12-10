@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace TSP
 {
@@ -13,7 +12,7 @@ namespace TSP
 
         public static int TotalCities { get; set; }
         public static int[,] CitiesArray { get; set; }
-        public static string FileName { get; set; } = @"C:\Users\JCVUMP\Desktop\C#\PEA\PEA_TSP\TSP\TSP\txt\data42.txt";
+        public static string FileName { get; set; } = @"C:\Users\JCVUMP\Desktop\C#\PEA\PEA_TSP\TSP\TSP\txt\data21.txt";
         public static int IterationCounter { get; set; } = 0;
         public static Stopwatch sw = new Stopwatch();
         public const int State = 2; // 1 - disables text appending so we don't calculate it
@@ -33,7 +32,7 @@ namespace TSP
             var tmp = sr.ReadToEnd().Replace(System.Environment.NewLine, " ").Split(' ');
             sr.Close();
 
-            
+
 
             // print what we loaded
             //foreach (var item in tmp)
@@ -116,10 +115,8 @@ namespace TSP
         private static void TabuSearchAlgorithm(int[] roadArray)
         {
             //parameters for tabuSearch
-            //int neighborhoodCap = TotalCities/2;
-            int neighborhoodCap = 3;
-            int cadency = TotalCities*3;
-            int time = 60;
+            int cadency = TotalCities * 3;
+            int time = 20;
             double aspiration = 0.95; // [0.0 - 1.0]
             Helper.Shuffle(new Random(), roadArray);
 

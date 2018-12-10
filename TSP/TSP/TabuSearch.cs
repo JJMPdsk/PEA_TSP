@@ -1,28 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Timers;
 
 namespace TSP
 {
     public class TabuSearch
     {
+        #region Fields
+
         private readonly int _cadency;
         private readonly double _aspiration;
-        private readonly int _seconds;
+        private readonly Timer _timer;
 
         private bool _continueRunning = true;
+        private List<Solution> _sortedNeighbors = new List<Solution>();
+
+        #endregion
+
+        #region Properties
 
         public Solution CurrentSolution { get; set; } = new Solution();
         public Solution BestSolution { get; set; } = new Solution();
+        public List<TabuElement> TabuList { get; set; } = new List<TabuElement>();
 
-        public List<TabuElement> TabuList = new List<TabuElement>();
+        #endregion
 
+        #region Constructors
 
         public TabuSearch(int cadency, double aspiration, int seconds, int[] initialPath)
         {
             _cadency = cadency;
             _aspiration = aspiration;
-            _seconds = seconds;
 
             CurrentSolution.Path = new List<int>(initialPath).ToArray();
             CurrentSolution.Distance = Helper.CalculateDistance(initialPath).Item1;
@@ -30,13 +39,20 @@ namespace TSP
 
             BestSolution.Path = new List<int>(initialPath).ToArray();
             BestSolution.Distance = Helper.CalculateDistance(initialPath).Item1;
-            BestSolution.LastChange = new TabuElement {Cadency = 0, To = 0, From = 0}; 
+            BestSolution.LastChange = new TabuElement { Cadency = 0, To = 0, From = 0 };
+
+
+            _timer = new Timer(seconds * 1000);
+            _timer.Elapsed += TimerTick;
         }
 
+        #endregion
+
+
+        #region Main methods
 
         private void GenerateNeighbors()
         {
-
             List<Solution> neighborSolutions = new List<Solution>();
 
             for (int i = 0; i < CurrentSolution.Path.Length; i++)
@@ -59,29 +75,25 @@ namespace TSP
                     Helper.Swap(CurrentSolution.Path, i, j); // Swap back
                 }
             }
-
-            MakeMove(neighborSolutions);
+            _sortedNeighbors = new List<Solution>(neighborSolutions.OrderBy(n => n.Distance).ToList());
+            MakeMove();
             UpdateTabuList();
         }
 
-        private void MakeMove(List<Solution> neighborSolutions)
+        private void MakeMove()
         {
-            //int i = 0;
-
-            var sortedNeighbors = neighborSolutions.OrderBy(n => n.Distance).ToList();
-
-            for (int i = 0; i < sortedNeighbors.Count; i++)
+            for (int i = 0; i < _sortedNeighbors.Count; i++)
             {
-                //if (!IsOnTabuList(sortedNeighbors[i].LastChange) && sortedNeighbors[i].Distance <= CurrentSolution.Distance)
-                if (!IsOnTabuList(sortedNeighbors[i].LastChange) || ((double)sortedNeighbors[i].Distance / (double)BestSolution.Distance) < _aspiration)
+                if (!IsOnTabuList(_sortedNeighbors[i].LastChange) || ((double)_sortedNeighbors[i].Distance / (double)BestSolution.Distance) < _aspiration)
                 {
-                    CurrentSolution.Distance = sortedNeighbors[i].Distance;
-                    CurrentSolution.Path = new List<int>(sortedNeighbors[i].Path).ToArray();
-                    CurrentSolution.LastChange = sortedNeighbors[i].LastChange;
+                    CurrentSolution.Distance = _sortedNeighbors[i].Distance;
+                    CurrentSolution.Path = new List<int>(_sortedNeighbors[i].Path).ToArray();
+                    CurrentSolution.LastChange = _sortedNeighbors[i].LastChange;
 
                     CurrentSolution.LastChange.Cadency = _cadency;
                     TabuList.Add(CurrentSolution.LastChange);
 
+                    _sortedNeighbors.RemoveAt(i);
 
                     if (CurrentSolution.Distance < BestSolution.Distance)
                     {
@@ -95,21 +107,12 @@ namespace TSP
                     return;
                 }
             }
-
             _continueRunning = false;
-
         }
 
+        #endregion
 
-        public void Run()
-        {
-            while (_continueRunning)
-            {
-                GenerateNeighbors();
-                //Console.WriteLine(BestSolution.Distance);
-            }
-        }
-
+        #region Helper methods
 
         private bool IsOnTabuList(TabuElement tabuElement)
         {
@@ -134,5 +137,22 @@ namespace TSP
 
         }
 
+        private void TimerTick(Object obj, ElapsedEventArgs e)
+        {
+            _continueRunning = false;
+            Console.WriteLine(BestSolution.Distance);
+        }
+
+        #endregion
+
+        public void Run()
+        {
+            _timer.Start();
+
+            while (_continueRunning)
+            {
+                GenerateNeighbors();
+            }
+        }
     }
 }
