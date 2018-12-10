@@ -54,6 +54,16 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="dane.txt" />
+    <Content Include="txt\data 17-120.txt" />
+    <Content Include="txt\data120.txt" />
+    <Content Include="txt\data17.txt" />
+    <Content Include="txt\data21.txt" />
+    <Content Include="txt\data24.txt" />
+    <Content Include="txt\data26.txt" />
+    <Content Include="txt\data29.txt" />
+    <Content Include="txt\data42.txt" />
+    <Content Include="txt\data58.txt" />
+    <Content Include="txt\tsp 6-17.txt" />
     <Content Include="txt\tsp_10.txt" />
     <Content Include="txt\tsp_12.txt" />
     <Content Include="txt\tsp_13.txt" />

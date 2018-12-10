@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace TSP
 {
@@ -12,7 +13,7 @@ namespace TSP
 
         public static int TotalCities { get; set; }
         public static int[,] CitiesArray { get; set; }
-        public static string FileName { get; set; } = @"C:\Users\JCVUMP\Desktop\C#\PEA_TSP\TSP\TSP\txt\data21.txt";
+        public static string FileName { get; set; } = @"C:\Users\JCVUMP\Desktop\C#\PEA\PEA_TSP\TSP\TSP\txt\data42.txt";
         public static int IterationCounter { get; set; } = 0;
         public static Stopwatch sw = new Stopwatch();
         public const int State = 2; // 1 - disables text appending so we don't calculate it
@@ -31,6 +32,8 @@ namespace TSP
             // Get whole file into string array and replace anything that is a new line with space. Then split it at every space occured.
             var tmp = sr.ReadToEnd().Replace(System.Environment.NewLine, " ").Split(' ');
             sr.Close();
+
+            
 
             // print what we loaded
             //foreach (var item in tmp)
@@ -114,14 +117,14 @@ namespace TSP
         {
             //parameters for tabuSearch
             //int neighborhoodCap = TotalCities/2;
-            int neighborhoodCap = 1;
+            int neighborhoodCap = 3;
             int cadency = TotalCities*3;
             int time = 60;
-            double aspiration = 0.99; // [0.0 - 1.0]
+            double aspiration = 0.95; // [0.0 - 1.0]
             Helper.Shuffle(new Random(), roadArray);
 
 
-            var tabuSearch = new TabuSearch(roadArray, cadency, time, aspiration, neighborhoodCap);
+            var tabuSearch = new TabuSearch(cadency, aspiration, time, roadArray);
             tabuSearch.Run();
         }
 

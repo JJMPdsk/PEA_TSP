@@ -1,188 +1,119 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Timers;
 
 namespace TSP
 {
     public class TabuSearch
     {
-        public List<TabuElement> TabuList = new List<TabuElement>();
-        public List<Solution> TopSolutions = new List<Solution>();
-
-
-        // Length in iterations for how long will the move be in tabu list 
         private readonly int _cadency;
         private readonly double _aspiration;
-        private readonly int _neighborCap;
-
-        public Solution CurrentSolution { get; set; }
-        public Solution BestEver { get; set; }
-
-
-        private int _bestSolution = Int32.MaxValue;
-        public int BestSolution
-        {
-            get { return _bestSolution; }
-            set
-            {
-                if (value < _bestSolution)
-                {
-                    _bestSolution = value;
-                    Console.WriteLine(value);
-                }
-            }
-        }
-
-        // For controlling the period of program running
-        private Timer _timer;
+        private readonly int _seconds;
 
         private bool _continueRunning = true;
 
+        public Solution CurrentSolution { get; set; } = new Solution();
+        public Solution BestSolution { get; set; } = new Solution();
 
-        public TabuSearch(int[] path, int cadency, int seconds, double aspiration, int neighborCap)
+        public List<TabuElement> TabuList = new List<TabuElement>();
+
+
+        public TabuSearch(int cadency, double aspiration, int seconds, int[] initialPath)
         {
-            CurrentSolution = new Solution() { Distance = Int32.MaxValue, LastChange = new TabuElement(), Path = path };
-            BestEver = new Solution() { Distance = Int32.MaxValue, LastChange = new TabuElement(), Path = path };
-
-
             _cadency = cadency;
             _aspiration = aspiration;
-            _neighborCap = neighborCap;
+            _seconds = seconds;
 
-            _timer = new Timer(seconds * 1000);
-            _timer.Elapsed += TimerTick;
+            CurrentSolution.Path = new List<int>(initialPath).ToArray();
+            CurrentSolution.Distance = Helper.CalculateDistance(initialPath).Item1;
+            CurrentSolution.LastChange = new TabuElement() { Cadency = 0, To = 0, From = 0 };
+
+            BestSolution.Path = new List<int>(initialPath).ToArray();
+            BestSolution.Distance = Helper.CalculateDistance(initialPath).Item1;
+            BestSolution.LastChange = new TabuElement {Cadency = 0, To = 0, From = 0}; 
         }
 
-        #region Methods
 
-        /// <summary>
-        /// Adds new element to tabu list
-        /// </summary>
-        /// <param name="tabuElement"></param>
-        public void AddTabuElement(TabuElement tabuElement)
+        private void GenerateNeighbors()
         {
-            TabuList.Add(tabuElement);
-        }
 
-        /// <summary>
-        ///  Updates the tabu list.
-        /// Decreases cadency of each element in tabu list and checks if the some elements shouldn't be removed
-        /// </summary>
-        public void UpdateTabuList()
-        {
-            foreach (var tabuElement in TabuList)
+            List<Solution> neighborSolutions = new List<Solution>();
+
+            for (int i = 0; i < CurrentSolution.Path.Length; i++)
             {
-                tabuElement.Cadency--;
-            }
-
-            TabuList.RemoveAll(t => t.Cadency == 0);
-
-            //if (tabuElement.Cadency == 0)
-            //     TabuList.Remove(tabuElement);
-        }
-
-        public void GenerateMovements(int[] path)
-        {
-            // First we need to decide whether we should generate new movements
-            if (TopSolutions.Count == 0)
-            {
-                // List of calculated solutions
-                List<Solution> Solutions = new List<Solution>();
-
-                // we calculate each with each
-                for (int i = 0; i < path.Length; i++)
+                for (int j = i + 1; j < CurrentSolution.Path.Length; j++)
                 {
-                    for (int j = i + 1; j < path.Length; j++)
+                    int[] pathBeforeSwap = new List<int>(CurrentSolution.Path).ToArray();
+                    Helper.Swap(CurrentSolution.Path, i, j);
+                    neighborSolutions.Add(new Solution
                     {
-                        Helper.Swap(path, i, j);
-                        var tmp = Helper.CalculateDistance(path);
-                        Solutions.Add(new Solution
+                        Distance = Helper.CalculateDistance(CurrentSolution.Path).Item1,
+                        Path = new List<int>(CurrentSolution.Path).ToArray(),
+                        LastChange = new TabuElement
                         {
-                            Distance = tmp.Item1,
-                            Path = path,
-                            LastChange = new TabuElement
-                            {
-                                Cadency = _cadency,
-                                From = path[i],
-                                To = path[j]
-                            }
-                        });
-                        Helper.Swap(path, i, j); // swap back
-                    }
+                            Cadency = 0,
+                            From = pathBeforeSwap[i],
+                            To = pathBeforeSwap[j]
+                        }
+                    });
+                    Helper.Swap(CurrentSolution.Path, i, j); // Swap back
                 }
-                // We get top solutions found
-                TopSolutions = Solutions.OrderBy(s => s.Distance).Take(_neighborCap).ToList();
             }
-            // Perform a movement
-            MakeMovement();
-            //!-----------------------------
-            //Console.WriteLine($"tmp dist: {CurrentSolution.Distance}");
-            //!-----------------------------
-            if (CurrentSolution.Distance < BestEver.Distance)
-            {
-                BestEver = CurrentSolution;
-                BestSolution = CurrentSolution.Distance;
-            }
+
+            MakeMove(neighborSolutions);
             UpdateTabuList();
         }
 
-        public void MakeMovement()
+        private void MakeMove(List<Solution> neighborSolutions)
         {
-            // Index of movement we are going to perform
-            int i = 0;
-            while (i < TopSolutions.Count)
+            //int i = 0;
+
+            var sortedNeighbors = neighborSolutions.OrderBy(n => n.Distance).ToList();
+
+            for (int i = 0; i < sortedNeighbors.Count; i++)
             {
-                if (ContainsElement(TabuList, TopSolutions[i].LastChange))
+                //if (!IsOnTabuList(sortedNeighbors[i].LastChange) && sortedNeighbors[i].Distance <= CurrentSolution.Distance)
+                if (!IsOnTabuList(sortedNeighbors[i].LastChange) || ((double)sortedNeighbors[i].Distance / (double)BestSolution.Distance) < _aspiration)
                 {
-                    if ((double)TopSolutions[i].Distance / (double)CurrentSolution.Distance <= _aspiration)
+                    CurrentSolution.Distance = sortedNeighbors[i].Distance;
+                    CurrentSolution.Path = new List<int>(sortedNeighbors[i].Path).ToArray();
+                    CurrentSolution.LastChange = sortedNeighbors[i].LastChange;
+
+                    CurrentSolution.LastChange.Cadency = _cadency;
+                    TabuList.Add(CurrentSolution.LastChange);
+
+
+                    if (CurrentSolution.Distance < BestSolution.Distance)
                     {
-                        CurrentSolution = TopSolutions[i];
-                        AddTabuElement(TopSolutions[i].LastChange);
-                        TopSolutions.RemoveAt(i);
-                        return;
+                        BestSolution.Distance = CurrentSolution.Distance;
+                        BestSolution.Path = new List<int>(CurrentSolution.Path).ToArray();
+                        BestSolution.LastChange = CurrentSolution.LastChange;
+
+                        Console.WriteLine(BestSolution.Distance);
                     }
-                }
-                else
-                {
-                    CurrentSolution = TopSolutions[i];
-                    AddTabuElement(TopSolutions[i].LastChange);
-                    TopSolutions.RemoveAt(i);
+
                     return;
                 }
-                i++;
             }
-            Helper.Shuffle(new Random(), CurrentSolution.Path);
+
+            _continueRunning = false;
+
         }
 
 
         public void Run()
         {
-            _timer.Start();
             while (_continueRunning)
             {
-                GenerateMovements(CurrentSolution.Path);
+                GenerateNeighbors();
+                //Console.WriteLine(BestSolution.Distance);
             }
-
-            Console.WriteLine($"Distance: {BestEver.Distance}");
-            //Console.Write("Path: ");
-            //for (int i = 0; i < CurrentSolution.Path.Length; i++)
-            //{
-            //    Console.Write(" " + CurrentSolution.Path[i]);
-            //}
-            //Console.WriteLine();
-            //Console.WriteLine();
-        }
-
-        private void TimerTick(Object obj, ElapsedEventArgs e)
-        {
-            _continueRunning = false;
         }
 
 
-        public bool ContainsElement(List<TabuElement> tabuElements, TabuElement tabuElement)
+        private bool IsOnTabuList(TabuElement tabuElement)
         {
-            foreach (var element in tabuElements)
+            foreach (var element in TabuList)
             {
                 if (element.From == tabuElement.From && element.To == tabuElement.To)
                     return true;
@@ -193,6 +124,15 @@ namespace TSP
             return false;
         }
 
-        #endregion
+        private void UpdateTabuList()
+        {
+            foreach (var tabuElement in TabuList)
+                tabuElement.Cadency--;
+
+
+            TabuList.RemoveAll(t => t.Cadency == 0);
+
+        }
+
     }
 }
