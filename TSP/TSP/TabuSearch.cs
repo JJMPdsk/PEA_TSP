@@ -100,8 +100,6 @@ namespace TSP
                         BestSolution.Distance = CurrentSolution.Distance;
                         BestSolution.Path = new List<int>(CurrentSolution.Path).ToArray();
                         BestSolution.LastChange = CurrentSolution.LastChange;
-
-                        Console.WriteLine(BestSolution.Distance);
                     }
 
                     return;
@@ -139,8 +137,8 @@ namespace TSP
 
         private void TimerTick(Object obj, ElapsedEventArgs e)
         {
-            _continueRunning = false;
             Console.WriteLine(BestSolution.Distance);
+            _continueRunning = false;
         }
 
         #endregion
