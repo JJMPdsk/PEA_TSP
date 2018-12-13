@@ -28,7 +28,7 @@ namespace TSP
 
         #region Constructors
 
-        public TabuSearch(int cadency, double aspiration, int seconds, int[] initialPath)
+        public TabuSearch(int cadency, double aspiration, double seconds, int[] initialPath)
         {
             _cadency = cadency;
             _aspiration = aspiration;
@@ -100,7 +100,6 @@ namespace TSP
                         BestSolution.Path = new List<int>(CurrentSolution.Path).ToArray();
                         BestSolution.LastChange = CurrentSolution.LastChange;
                     }
-
                     return;
                 }
             }
