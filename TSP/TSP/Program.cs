@@ -10,18 +10,17 @@ namespace TSP
 
         #region Properties
 
-        public static int TotalCities { get; set; }
-        public static int[,] CitiesArray { get; set; }
-        public static string FileName { get; set; } = @"C:\Users\JCVUMP\Desktop\C#\PEA\PEA_TSP\TSP\TSP\txt\data21.txt";
-        public static int IterationCounter { get; set; } = 0;
-        public static Stopwatch sw = new Stopwatch();
-        public const int State = 2; // 1 - disables text appending so we don't calculate it
-                                    // 2 - enables text appending
+        public static int TotalCities { get; set; } // amount of cities
+        public static int[,] CitiesArray { get; set; } // 2D array of distances
+        public static string FileName { get; set; } =
+            @"C:\Users\JCVUMP\Desktop\C#\PEA\PEA_TSP\TSP\TSP\txt\data21.txt";
+        public static int IterationCounter { get; set; } = 0; // iteration counter for BF 
 
-        public const bool Testing = true;
+        public const bool Testing = true; // 1 - enables text appending and route showing
 
-        private static FileStream fs = new FileStream(FileName, FileMode.Open, FileAccess.Read);
-        private static StreamReader sr = new StreamReader(fs);
+        public static Stopwatch Stopwatch = new Stopwatch();
+        private static readonly FileStream fs = new FileStream(FileName, FileMode.Open, FileAccess.Read);
+        private static readonly StreamReader sr = new StreamReader(fs);
         #endregion
 
         #region Methods
@@ -117,7 +116,7 @@ namespace TSP
         {
             //parameters for tabuSearch
             int cadency = TotalCities * 2;
-            double time = 0.2;
+            double time = 3;
             double aspiration = 0.95; // [0.0 - 1.0]
             Helper.Shuffle(new Random(), roadArray);
 
@@ -138,12 +137,12 @@ namespace TSP
             {
                 PrintCities(CitiesArray);
 
-                sw.Reset();
-                sw.Start();
+                Stopwatch.Reset();
+                Stopwatch.Start();
                 Algorithm.BruteForce(roadArray, 0, roadArray.Length - 1);
-                sw.Stop();
+                Stopwatch.Stop();
                 Console.WriteLine($"Iterations: {IterationCounter}");
-                Console.WriteLine($"Elapsed: {sw.Elapsed}");
+                Console.WriteLine($"Elapsed: {Stopwatch.Elapsed}");
                 Console.WriteLine($"Solution: {Algorithm.BestRoad}");
                 Console.WriteLine($"Path: {Algorithm.BestPath}");
             }
@@ -152,11 +151,11 @@ namespace TSP
                 int N = 500;
                 for (int i = 0; i < N; i++)
                 {
-                    sw.Reset();
-                    sw.Start();
+                    Stopwatch.Reset();
+                    Stopwatch.Start();
                     Algorithm.BruteForce(roadArray, 0, roadArray.Length - 1);
-                    sw.Stop();
-                    Console.WriteLine(sw.Elapsed);
+                    Stopwatch.Stop();
+                    Console.WriteLine(Stopwatch.Elapsed);
                 }
             }
         }

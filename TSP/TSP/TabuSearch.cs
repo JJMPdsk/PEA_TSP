@@ -143,6 +143,7 @@ namespace TSP
         public void Run()
         {
             _timer.Start();
+            _continueRunning = true;
 
             while (_continueRunning)
             {
