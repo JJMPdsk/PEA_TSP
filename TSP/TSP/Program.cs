@@ -167,11 +167,12 @@ namespace TSP
 
         private static void GeneticAlgorithm()
         {
-            int populationCount = 21;
-            int generationCount = 5000;
-            double mutationChance = 0.05;
+            int populationCount = TotalCities*4;
+            int generationCount = 10000;
+            double crossoverChance = 0.3;
+            double mutationChance = 0.1;
 
-            var geneticAlgorithm = new GeneticAlgorithm(populationCount, generationCount, mutationChance);
+            var geneticAlgorithm = new GeneticAlgorithm(populationCount, generationCount, mutationChance, crossoverChance);
             
             geneticAlgorithm.Run();
         }

@@ -10,6 +10,7 @@ namespace TSP
         public int PopulationCount { get; set; }
         public int GenerationCount { get; set; }
         public double MutationChance { get; set; }
+        public double CrossoverChance { get; set; }
 
         public List<Solution> Population { get; set; } = new List<Solution>();
         public List<Solution> NextPopulation { get; set; } = new List<Solution>();
@@ -18,7 +19,7 @@ namespace TSP
         private int _secondParent = Int32.MaxValue;
 
 
-        public GeneticAlgorithm(int populationCount, int generationCount, double mutationChance)
+        public GeneticAlgorithm(int populationCount, int generationCount, double mutationChance, double crossoverChance)
         {
             PopulationCount = populationCount;
             GenerationCount = generationCount;
@@ -99,68 +100,81 @@ namespace TSP
         private void Cross()
         {
             var rnd = new Random(Guid.NewGuid().GetHashCode());
-            // random how long will the be replacement segment from first parent
-            int lengthOfRandomlyChosenSegment = rnd.Next(Population[_firstParent].Path.Length);
 
-            // random the starting index which we will start from our replacement (simplified, so we don't have like 7 elements to replace while being started on last element)
-            int firstElementStartingIndex;
-            do
+            int initializingSolution = rnd.Next(Population.Count);
+
+            var childSolution = new Solution
             {
-                firstElementStartingIndex = rnd.Next(Population[_firstParent].Path.Length);
-            }
-            while ((firstElementStartingIndex + lengthOfRandomlyChosenSegment >= Population[_firstParent].Path.Length));
+                Distance = Population[initializingSolution].Distance,
+                Path = new List<int>(Population[initializingSolution].Path).ToArray(),
+            };
 
-            // create new path which we will assign to child and initialize it with int32.maxval
-            int[] newPath = new int[Program.TotalCities - 1];
-            for (int i = 0; i < newPath.Length; i++) newPath[i] = Int32.MaxValue;
 
-            // inject elements from first parent to it's child
-            for (int i = firstElementStartingIndex; i < lengthOfRandomlyChosenSegment; i++)
-                newPath[i] = Population[_firstParent].Path[i];
-
-            // now we need to know where to start filling the rest
-            int secondElementStartingIndex = firstElementStartingIndex + lengthOfRandomlyChosenSegment;
-
-            // helper variables for the loop
-            int childIndex = secondElementStartingIndex, parentIndex = secondElementStartingIndex;
-
-            while (newPath.Contains(Int32.MaxValue))
+            if (rnd.NextDouble() <= CrossoverChance)
             {
-                // if we reached the end of array, reset the indexes
-                if (childIndex == newPath.Length) childIndex = 0;
-                if (parentIndex == newPath.Length) parentIndex = 0;
+                // random how long will the be replacement segment from first parent
+                int lengthOfRandomlyChosenSegment = rnd.Next(Population[_firstParent].Path.Length);
 
-                // if child with this index is our initial value
-                if (newPath[childIndex] == Int32.MaxValue)
+                // random the starting index which we will start from our replacement (simplified, so we don't have like 7 elements to replace while being started on last element)
+                int firstElementStartingIndex;
+                do
                 {
-                    // if our child contains a value of second parent on this index
-                    if (newPath.Contains(Population[_secondParent].Path[parentIndex]))
+                    firstElementStartingIndex = rnd.Next(Population[_firstParent].Path.Length);
+                }
+                while ((firstElementStartingIndex + lengthOfRandomlyChosenSegment >= Population[_firstParent].Path.Length));
+
+                // create new path which we will assign to child and initialize it with int32.maxval
+                int[] newPath = new int[Program.TotalCities - 1];
+                for (int i = 0; i < newPath.Length; i++) newPath[i] = Int32.MaxValue;
+
+                // inject elements from first parent to it's child
+                for (int i = firstElementStartingIndex; i < lengthOfRandomlyChosenSegment; i++)
+                    newPath[i] = Population[_firstParent].Path[i];
+
+                // now we need to know where to start filling the rest
+                int secondElementStartingIndex = firstElementStartingIndex + lengthOfRandomlyChosenSegment;
+
+                // helper variables for the loop
+                int childIndex = secondElementStartingIndex, parentIndex = secondElementStartingIndex;
+
+                while (newPath.Contains(Int32.MaxValue))
+                {
+                    // if we reached the end of array, reset the indexes
+                    if (childIndex == newPath.Length) childIndex = 0;
+                    if (parentIndex == newPath.Length) parentIndex = 0;
+
+                    // if child with this index is our initial value
+                    if (newPath[childIndex] == Int32.MaxValue)
                     {
-                        parentIndex++;
+                        // if our child contains a value of second parent on this index
+                        if (newPath.Contains(Population[_secondParent].Path[parentIndex]))
+                        {
+                            parentIndex++;
+                        }
+                        else
+                        {
+                            // assign from second parent to child
+                            newPath[childIndex] = Population[_secondParent].Path[parentIndex];
+                            childIndex++;
+                            parentIndex++;
+                        }
                     }
                     else
                     {
-                        // assign from second parent to child
-                        newPath[childIndex] = Population[_secondParent].Path[parentIndex];
                         childIndex++;
-                        parentIndex++;
                     }
                 }
-                else
+
+                // create new tuple to hold information about our child's distance and path
+                Tuple<int, string> childPath = Helper.CalculateDistance(newPath);
+
+                // create child's solution object
+                childSolution = new Solution
                 {
-                    childIndex++;
-                }
+                    Path = newPath,
+                    Distance = childPath.Item1
+                };
             }
-
-            // create new tuple to hold information about our child's distance and path
-            Tuple<int, string> childPath = Helper.CalculateDistance(newPath);
-
-            // create child's solution object
-            var childSolution = new Solution
-            {
-                Path = newPath,
-                Distance = childPath.Item1
-            };
 
             Mutate(childSolution);
             //Console.WriteLine($"distance: {childSolution.Distance}");
@@ -200,14 +214,18 @@ namespace TSP
                 var orderedPopulation = Population.OrderBy(p => p.Distance);
                 Population = orderedPopulation.ToList();
 
-                Console.WriteLine($"{i} generation best distance: {Population[0].Distance}");
-                if (Population[0].Distance < bestDistance) bestDistance = Population[0].Distance;
+                //Console.WriteLine($"{i} generation best distance: {Population[0].Distance}");
+                if (Population[0].Distance < bestDistance)
+                {
+                    bestDistance = Population[0].Distance;
+                    Console.WriteLine($"{i} generation found new best solution, {Population[0].Distance}");
+                }
             }
 
 
-            Console.WriteLine("###########################");
+            // Console.WriteLine("###########################");
             Console.WriteLine($"Best distance: {bestDistance}");
-            Console.WriteLine("###########################");
+            //Console.WriteLine("###########################");
         }
     }
 }
