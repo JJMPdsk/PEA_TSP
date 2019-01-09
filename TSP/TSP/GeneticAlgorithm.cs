@@ -1,57 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Win32.SafeHandles;
+using System.Timers;
 
 namespace TSP
 {
     public class GeneticAlgorithm
     {
-        // Number of solutions in Population list
-        public int PopulationCount { get; set; }
-        public int GenerationCount { get; set; }
-        public double MutationChance { get; set; }
-        public double CrossoverChance { get; set; }
+        #region Fields
 
-        public List<Solution> Population { get; set; } = new List<Solution>();
-        public List<Solution> NextPopulation { get; set; } = new List<Solution>();
+        private readonly Timer _timer;
+        private bool _continueRunning;
 
-        private int _firstParent = Int32.MaxValue;
-        private int _secondParent = Int32.MaxValue;
+        // Number of solutions in population list
+        private readonly int _populationSize;
+        private readonly double _mutationChance;
+        private readonly double _crossoverChance;
 
+        private List<Solution> _population = new List<Solution>();
+        private readonly List<Solution> _nextPopulation = new List<Solution>();
 
-        public GeneticAlgorithm(int populationCount, int generationCount, double mutationChance, double crossoverChance)
+        private int _firstParent = int.MaxValue;
+        private int _secondParent = int.MaxValue;
+
+        #endregion
+
+        #region Constructors
+
+        public GeneticAlgorithm(int populationSize, double mutationChance, double crossoverChance, double time)
         {
-            PopulationCount = populationCount;
-            GenerationCount = generationCount;
-            MutationChance = mutationChance;
-            CrossoverChance = crossoverChance;
+            _populationSize = populationSize;
+            _mutationChance = mutationChance;
+            _crossoverChance = crossoverChance;
+
+            _timer = new Timer(time * 1000);
+            _timer.Elapsed += TimerTick;
+
 
             InitializePopulation();
         }
 
-        private void InitializePopulation()
-        {
-            // fill the list with default routes [ 0, 1, 2, 3, (...) ]
-            for (int i = 0; i < PopulationCount; i++)
-            {
-                Population.Add(new Solution { Path = Helper.FillRoadArray() });
-                Helper.Shuffle(new Random(Guid.NewGuid().GetHashCode()), Population[i].Path);
-                Population[i].Distance = Helper.CalculateDistance(Population[i].Path).Item1;
-            }
+        #endregion
 
-            // order to make it more comfortable to assign probabilities later on
-            var orderedPopulation = Population.OrderBy(p => p.Distance);
-            Population = orderedPopulation.ToList();
-        }
+        #region Methods
 
-        private void GeneratePopulation()
-        {
-            for (int i = 0; i < PopulationCount; i++)
-                ChooseParents();
-        }
-
-
+        /// <summary>
+        /// Choosing parents for crossing method
+        /// </summary>
         private void ChooseParents()
         {
             var rnd = new Random(Guid.NewGuid().GetHashCode());
@@ -60,78 +55,72 @@ namespace TSP
             var weightedPopulation = new List<Tuple<Solution, double>>();
 
             // assign probabilities to solutions - the worse solution - the lower chance of being picked
-            for (int i = 0; i < PopulationCount; i++)
+            for (int i = 0; i < _populationSize; i++)
             {
                 double probability = 1f / Math.Pow(2, i);
-                weightedPopulation.Add(new Tuple<Solution, double>(Population[i], probability));
+                weightedPopulation.Add(new Tuple<Solution, double>(_population[i], probability));
             }
 
             double roll = rnd.NextDouble();
 
-            //foreach (var tuple in weightedPopulation)
-            //Console.WriteLine($"solution: {tuple.Item1.Distance}, chance: {tuple.Item2}");
-
-            for (int i = PopulationCount - 1; i >= 0; i--)
+            for (int i = _populationSize - 1; i >= 0; i--)
                 if (weightedPopulation[i].Item2 >= roll)
                 {
                     _firstParent = i;
                     break;
                 }
 
-
-            while (_secondParent == Int32.MaxValue)
+            while (_secondParent == int.MaxValue)
             {
                 roll = rnd.NextDouble();
-                for (int i = PopulationCount - 1; i >= 0; i--)
+                for (int i = _populationSize - 1; i >= 0; i--)
                     if (weightedPopulation[i].Item2 >= roll && i != _firstParent)
                     {
                         _secondParent = i;
                         break;
                     }
             }
-
             //Console.WriteLine($"First selected: {Population[firstFound].Distance}");
             //Console.WriteLine($"Second selected: {Population[secondFound].Distance}");
 
-            ////////////////////////////////////////////////
             Cross();
-            ////////////////////////////////////////////////
-
         }
 
+        /// <summary>
+        /// Method handling the cross operation
+        /// </summary>
         private void Cross()
         {
             var rnd = new Random(Guid.NewGuid().GetHashCode());
 
-            int initializingSolution = rnd.Next(Population.Count);
+            int initializingSolution = rnd.Next(_population.Count);
 
             var childSolution = new Solution
             {
-                Distance = Population[initializingSolution].Distance,
-                Path = new List<int>(Population[initializingSolution].Path).ToArray(),
+                Distance = _population[initializingSolution].Distance,
+                Path = new List<int>(_population[initializingSolution].Path).ToArray(),
             };
 
-
-            if (rnd.NextDouble() <= CrossoverChance)
+            if (rnd.NextDouble() <= _crossoverChance)
             {
                 // random how long will the be replacement segment from first parent
-                int lengthOfRandomlyChosenSegment = rnd.Next(Population[_firstParent].Path.Length);
+                int lengthOfRandomlyChosenSegment = rnd.Next(_population[_firstParent].Path.Length);
 
                 // random the starting index which we will start from our replacement (simplified, so we don't have like 7 elements to replace while being started on last element)
                 int firstElementStartingIndex;
                 do
                 {
-                    firstElementStartingIndex = rnd.Next(Population[_firstParent].Path.Length);
+                    firstElementStartingIndex = rnd.Next(_population[_firstParent].Path.Length);
                 }
-                while ((firstElementStartingIndex + lengthOfRandomlyChosenSegment >= Population[_firstParent].Path.Length));
+                while ((firstElementStartingIndex + lengthOfRandomlyChosenSegment >= _population[_firstParent].Path.Length));
 
-                // create new path which we will assign to child and initialize it with int32.maxval
+                // create new path which we will assign to child and initialize it with int.maxvalue
                 int[] newPath = new int[Program.TotalCities - 1];
-                for (int i = 0; i < newPath.Length; i++) newPath[i] = Int32.MaxValue;
+                for (int i = 0; i < newPath.Length; i++) newPath[i] = int.MaxValue;
 
                 // inject elements from first parent to it's child
                 for (int i = firstElementStartingIndex; i < lengthOfRandomlyChosenSegment; i++)
-                    newPath[i] = Population[_firstParent].Path[i];
+                    newPath[i] = _population[_firstParent].Path[i];
 
                 // now we need to know where to start filling the rest
                 int secondElementStartingIndex = firstElementStartingIndex + lengthOfRandomlyChosenSegment;
@@ -139,24 +128,24 @@ namespace TSP
                 // helper variables for the loop
                 int childIndex = secondElementStartingIndex, parentIndex = secondElementStartingIndex;
 
-                while (newPath.Contains(Int32.MaxValue))
+                while (newPath.Contains(int.MaxValue))
                 {
                     // if we reached the end of array, reset the indexes
                     if (childIndex == newPath.Length) childIndex = 0;
                     if (parentIndex == newPath.Length) parentIndex = 0;
 
                     // if child with this index is our initial value
-                    if (newPath[childIndex] == Int32.MaxValue)
+                    if (newPath[childIndex] == int.MaxValue)
                     {
                         // if our child contains a value of second parent on this index
-                        if (newPath.Contains(Population[_secondParent].Path[parentIndex]))
+                        if (newPath.Contains(_population[_secondParent].Path[parentIndex]))
                         {
                             parentIndex++;
                         }
                         else
                         {
                             // assign from second parent to child
-                            newPath[childIndex] = Population[_secondParent].Path[parentIndex];
+                            newPath[childIndex] = _population[_secondParent].Path[parentIndex];
                             childIndex++;
                             parentIndex++;
                         }
@@ -182,14 +171,18 @@ namespace TSP
             //Console.WriteLine($"distance: {childSolution.Distance}");
             //Console.WriteLine($"path: {childPath.Item2}");
 
-            NextPopulation.Add(childSolution);
+            _nextPopulation.Add(childSolution);
         }
 
+        /// <summary>
+        /// Method handling the mutation
+        /// </summary>
+        /// <param name="childSolution"></param>
         private void Mutate(Solution childSolution)
         {
             var rnd = new Random(Guid.NewGuid().GetHashCode());
 
-            if (rnd.NextDouble() <= MutationChance)
+            if (rnd.NextDouble() <= _mutationChance)
             {
                 int firstCity, secondCity;
                 firstCity = rnd.Next(childSolution.Path.Length);
@@ -204,30 +197,64 @@ namespace TSP
             }
         }
 
-        public void Run()
+        private void InitializePopulation()
         {
-            int bestDistance = Int32.MaxValue;
-            for (int i = 0; i < GenerationCount; i++)
+            // fill the list with default routes [ 0, 1, 2, 3, (...) ]
+            for (int i = 0; i < _populationSize; i++)
             {
-                NextPopulation.Clear();
-                GeneratePopulation();
-                Population = new List<Solution>(NextPopulation);
-
-                var orderedPopulation = Population.OrderBy(p => p.Distance);
-                Population = orderedPopulation.ToList();
-
-                //Console.WriteLine($"{i} generation best distance: {Population[0].Distance}");
-                if (Population[0].Distance < bestDistance)
-                {
-                    bestDistance = Population[0].Distance;
-                    Console.WriteLine($"{i} generation found new best solution, {Population[0].Distance}");
-                }
+                _population.Add(new Solution { Path = Helper.FillRoadArray() });
+                Helper.Shuffle(new Random(Guid.NewGuid().GetHashCode()), _population[i].Path);
+                _population[i].Distance = Helper.CalculateDistance(_population[i].Path).Item1;
             }
 
-
-            // Console.WriteLine("###########################");
-            Console.WriteLine($"Best distance: {bestDistance}");
-            //Console.WriteLine("###########################");
+            // order to make it more comfortable to assign probabilities later on
+            var orderedPopulation = _population.OrderBy(p => p.Distance);
+            _population = orderedPopulation.ToList();
         }
+
+        /// <summary>
+        /// Method generating population
+        /// </summary>
+        private void GeneratePopulation()
+        {
+            for (int i = 0; i < _populationSize; i++)
+                ChooseParents();
+        }
+
+        /// <summary>
+        /// Method that runs the algorithm, sets up a timer and monitor if we achieved the stopping criteria
+        /// </summary>
+        public void Run()
+        {
+            _timer.Start();
+            _continueRunning = true;
+
+            int generationCounter = 0;
+            int bestDistance = int.MaxValue;
+
+            while (_continueRunning)
+            {
+                _nextPopulation.Clear();
+                GeneratePopulation();
+                _population = new List<Solution>(_nextPopulation);
+
+                var orderedPopulation = _population.OrderBy(p => p.Distance);
+                _population = orderedPopulation.ToList();
+
+                if (_population[0].Distance < bestDistance)
+                {
+                    bestDistance = _population[0].Distance;
+                    Console.WriteLine($"{generationCounter} generation found new best solution, {_population[0].Distance}");
+                }
+
+                generationCounter++;
+            }
+
+            Console.WriteLine($"Best distance: {bestDistance}");
+        }
+
+        #endregion
+
+        private void TimerTick(object obj, ElapsedEventArgs e) => _continueRunning = false;
     }
 }

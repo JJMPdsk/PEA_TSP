@@ -12,16 +12,17 @@ namespace TSP
 
         public static int TotalCities { get; set; } // amount of cities
         public static int[,] CitiesArray { get; set; } // 2D array of distances
-        //public static string FileName { get; set; } =
+        //public static string FilePath { get; set; } =
         //    @"C:\Users\JCVUMP\Desktop\C#\PEA\PEA_TSP\TSP\TSP\txt\data21.txt";
 
-        public static string FileName = @"..\..\txt\data21.txt";
+        public static string FileName = "data58.txt";
+        public static string FilePath = @"..\..\txt\" + FileName;
         public static int IterationCounter { get; set; } = 0; // iteration counter for BF 
 
         public const bool Testing = true; // 1 - enables text appending and route showing
 
         public static Stopwatch Stopwatch = new Stopwatch();
-        private static readonly FileStream fs = new FileStream(FileName, FileMode.Open, FileAccess.Read);
+        private static readonly FileStream fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
         private static readonly StreamReader sr = new StreamReader(fs);
         #endregion
 
@@ -167,13 +168,13 @@ namespace TSP
 
         private static void GeneticAlgorithm()
         {
-            int populationCount = TotalCities*3;
-            int generationCount = 1000000;
-            double crossoverChance = 0.3;
+            int populationCount = TotalCities * 3;
+            double crossoverChance = 0.6;
             double mutationChance = 0.15;
+            double time = 10; // time in seconds
 
-            var geneticAlgorithm = new GeneticAlgorithm(populationCount, generationCount, mutationChance, crossoverChance);
-            
+            var geneticAlgorithm = new GeneticAlgorithm(populationCount, mutationChance, crossoverChance, time);
+
             geneticAlgorithm.Run();
         }
 
