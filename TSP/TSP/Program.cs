@@ -167,10 +167,10 @@ namespace TSP
 
         private static void GeneticAlgorithm()
         {
-            int populationCount = TotalCities*4;
-            int generationCount = 10000;
+            int populationCount = TotalCities*3;
+            int generationCount = 1000000;
             double crossoverChance = 0.3;
-            double mutationChance = 0.1;
+            double mutationChance = 0.15;
 
             var geneticAlgorithm = new GeneticAlgorithm(populationCount, generationCount, mutationChance, crossoverChance);
             
