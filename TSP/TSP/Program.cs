@@ -12,8 +12,10 @@ namespace TSP
 
         public static int TotalCities { get; set; } // amount of cities
         public static int[,] CitiesArray { get; set; } // 2D array of distances
-        public static string FileName { get; set; } =
-            @"C:\Users\JCVUMP\Desktop\C#\PEA\PEA_TSP\TSP\TSP\txt\data21.txt";
+        //public static string FileName { get; set; } =
+        //    @"C:\Users\JCVUMP\Desktop\C#\PEA\PEA_TSP\TSP\TSP\txt\data21.txt";
+
+        public static string FileName = @"..\..\txt\data21.txt";
         public static int IterationCounter { get; set; } = 0; // iteration counter for BF 
 
         public const bool Testing = true; // 1 - enables text appending and route showing
@@ -101,11 +103,13 @@ namespace TSP
             ReadCitiesFromFileAsMatrix();
             int[] roadArray = Helper.FillRoadArray();
 
-            for (int i = 0; i < 50; i++)
-                TabuSearchAlgorithm(roadArray);
+            //for (int i = 0; i < 50; i++)
+            //    TabuSearchAlgorithm(roadArray);
 
 
             //BruteForceAlgorithm(roadArray);
+
+            GeneticAlgorithm();
 
             Console.WriteLine("THE END");
             Console.ReadKey();
@@ -159,5 +163,18 @@ namespace TSP
                 }
             }
         }
+
+
+        private static void GeneticAlgorithm()
+        {
+            int populationCount = 21;
+            int generationCount = 5000;
+            double mutationChance = 0.05;
+
+            var geneticAlgorithm = new GeneticAlgorithm(populationCount, generationCount, mutationChance);
+            
+            geneticAlgorithm.Run();
+        }
+
     }
 }

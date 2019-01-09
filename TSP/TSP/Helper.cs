@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace TSP
@@ -64,10 +66,14 @@ namespace TSP
         public static int[] FillRoadArray()
         {
             // Array containing only one path, ie 0 -> 1 -> 2 -> 4 -> 3 -> 0 to operate on CitiesArray.
-            int[] RoadArray = new int[Program.TotalCities - 1]; // We know first city we travel from and last city we travel to, therefore -1
-            for (int i = 0; i < Program.TotalCities - 1; i++) { RoadArray[i] = i + 1; } // Fill RoadArray with next cities
+           //int[] roadArray = new int[Program.TotalCities - 1]; // We know first city we travel from and last city we travel to, therefore -1
+            int[] roadArray = new int[Program.TotalCities - 1]; // We know first city we travel from and last city we travel to, therefore -1
+            for (int i = 0; i < Program.TotalCities - 1; i++) { roadArray[i] = i + 1; } // Fill RoadArray with next cities
 
-            return RoadArray;
+            var tmp = new List<int>();
+            tmp = roadArray.ToList();
+
+            return tmp.ToArray();
         }
 
         /// <summary>
